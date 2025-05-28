@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FAQ com Abas + Busca + Copiar + Modo Escuro</title>
+ <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#e63946" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <style>
+    :root {
+      --bg: #f1f5f9;
+      --fg: #1e293b;
+      --card: #fff;
+      --accent: #4f46e5;
+      --muted: #e0e7ff;
+    }
+    [data-theme="dark"] {
+      --bg: #0f172a;
+      --fg: #f1f5f9;
+      --card: #1e293b;
+      --accent: #6366f1;
+      --muted: #1e3a8a;
+    }
+    body {
+      font-family: 'Inter', sans-serif;
+      margin: 0;
+      background: var(--bg);
+      color: var(--fg);
+    }
+    header {
+      background-color: var(--accent);
+      color: white;
+      padding: 1.5rem;
+      text-align: center;
+      font-size: 1.8rem;
+    }
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.5rem 1rem;
+      background: var(--muted);
+    }
+    .top-bar input {
+      width: 100%;
+      max-width: 400px;
+      padding: 0.5rem;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+    .tabs {
+      display: flex;
+      flex-wrap: wrap;
+      overflow-x: auto;
+      padding: 0.5rem 1rem;
+      background: var(--muted);
+      border-bottom: 2px solid var(--accent);
+    }
+    .tab-button {
+      padding: 0.6rem 1rem;
+      margin-right: 5px;
+      border: none;
+      background: none;
+      cursor: pointer;
+      font-weight: 600;
+      color: var(--accent);
+      border-radius: 6px 6px 0 0;
+    }
+    .tab-button.active {
+      background: var(--card);
+      border: 1px solid #ccc;
+      border-bottom: none;
+    }
+    .tab-content {
+      display: none;
+      padding: 1.5rem;
+      background: var(--card);
+      border: 1px solid #ccc;
+      border-top: none;
+      border-radius: 0 0 8px 8px;
+      margin: 0 1rem 2rem;
+    }
+    .tab-content.active {
+      display: block;
+    }
+    .qna-item {
+      background: var(--card);
+      border: 1px solid #ddd;
+      border-left: 5px solid var(--accent);
+      border-radius: 6px;
+      padding: 1rem;
+      margin-bottom: 1rem;
+      position: relative;
+    }
+    .qna-item strong {
+      display: block;
+      margin-bottom: 0.5rem;
+      color: var(--fg);
+    }
+    .copy-btn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: var(--accent);
+      border: none;
+      color: white;
+      padding: 0.3rem 0.6rem;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .modo-escuro-toggle {
+      margin-left: 1rem;
+      cursor: pointer;
+      font-size: 1.2rem;
+    }
+.tabs {
+  position: sticky;
+  top: 0;
+  background: #fff;
+  z-index: 1000;
+  padding-top: 10px;
+}
+.tabs {
+  position: sticky;
+  top: 0;
+  background: #fff;
+  z-index: 1000;
+  padding-top: 10px;
+}
+
+.feedback {
+  font-size: 0.9em;
+  margin-top: 5px;
+}
+
+.feedback button {
+  margin-left: 5px;
+  padding: 2px 6px;
+}
+.estrela {
+  float: right;
+  cursor: pointer;
+  font-size: 1.2em;
+  user-select: none;
+  transition: color 0.3s;
+}
+.favorito {
+  color: gold;
+}
+
+  </style>
+</head>
+<body>
+  <header>FAQ - Sistema de Respostas Rápidas</header>
+  <div class="top-bar">
+    <input type="text" id="busca" placeholder="Buscar pergunta ou resposta..." onkeyup="filtrarPerguntas()">
+    <span class="modo-escuro-toggle" onclick="alternarTema()"><i class="fas fa-adjust"></i></span>
+<button id="exportarPDF" style="margin: 1rem 0; padding: 0.5rem 1rem;">📄 Exportar aba atual</button>
+<button id="restaurarDados" style="margin: 1rem 0 1rem 10px; padding: 0.5rem 1rem; background: #dc3545; color: white;">💾 Restaurar Originais</button>
+  </div>
+  <div class="tabs" id="tabs"></div>
+  <div id="conteudos"></div>
+
+<script>
+
+    const dados = {
+      "INF ENVIOS": [
+        { pergunta: "MUDANÇA DE PRAZO de entrega", resposta: "Oii, tudo bem? Peço desculpas por isso, essas mudanças também nos afetam. Como a entrega é feita pela Shopee, não temos controle. Mas não se preocupe, já acionei a Shopee para que priorizem seu pedido." },
+        { pergunta: "TEM COMO CHEGAR ATÉ ESSA DATA?", resposta: "Oii, tudo bem? Acredito que sim, mas infelizmente não consigo dar data exata, pois todas as entregas são feitas pela Shopee Express." },
+        { pergunta: "Não entregue, parado", resposta: "Sinto muito pelo problema com a entrega. Infelizmente, a Shopee é responsável por essa etapa, mas estou aqui para ajudar. Já abri um chamado reforçando a urgência do seu caso. Você também pode falar com o suporte pelo app, na seção 'Ajuda'." }
+      ],
+      "NOVO PEDIDO": [
+        { pergunta: "pedido feito hoje", resposta: "Oii, tudo bem? Os pedidos são enviados em até 48 horas e chegam de 3 a 6 dias úteis." },
+        { pergunta: "MAIS DE 1 DIA", resposta: "Oii, tudo bem? Os pedidos são enviados em até 24 horas e chegam em média de 4 a 8 dias úteis." }
+      ],
+      "ATRASADO": [
+        { pergunta: "atraso primeira mensagem", resposta: "Olá! Peço desculpas pela demora. Com o aumento nas vendas e falhas na coleta da Shopee, tivemos atrasos. Já estamos em contato com eles. Como desculpa, ofereço um cupom de desconto. Se preferir, posso encerrar o pedido." },
+        { pergunta: "atraso segunda mensagem", resposta: "Oi! Peço desculpas. A Shopee teve problemas na coleta por redução da frota. Estamos tentando resolver hoje até 18h. Posso cancelar o pedido ou te dar um cupom de desconto como forma de compensação." },
+        { pergunta: "Atraso cliente bravo", resposta: "Olá! Peço desculpas pela demora. A Shopee está com problemas na coleta, mas garantiram retirada hoje. Se quiser, posso cancelar ou enviar um cupom de 15% para a próxima compra." }
+      ],
+      "ENVIADO": [
+        { pergunta: "ENVIADO", resposta: "Oii, tudo bem? Já foi enviado." },
+        { pergunta: "ENVIADO ATRASADO", resposta: "Oii, tudo bem? Peço desculpas pela demora, tivemos atrasos nas coletas, mas já foi enviado." }
+      ],
+      "INFO ENTREGAS": [
+        { pergunta: "NÃO CONSIGO USAR O CUPOM FRETE GRATIS", resposta: "Bom dia! O frete grátis é uma promoção da própria Shopee, para algumas regiões. Não temos controle sobre isso." },
+        { pergunta: "QUERO MUDAR O ENDEREÇO DE ENTREGA", resposta: "Oii, tudo bem? Não conseguimos alterar o endereço após a compra. Para isso, é necessário cancelar e refazer o pedido com o endereço correto." },
+        { pergunta: "ESTÃO COBRANDO UM TAXA EXTRA PELA ENTREGA", resposta: "Oii, tudo bem? A Shopee não cobra nada fora do app. Se alguém cobrou algo fora da Shopee, é golpe. Denuncie!" },
+        { pergunta: "quero o Rastreio do pedido", resposta: "Oii, tudo bem? Já foi enviado. O rastreio está dentro do seu pedido no app da Shopee." },
+        { pergunta: "envia por ONDE?", resposta: "Oii, tudo bem? Os envios são feitos pela Shopee Express." },
+        { pergunta: "quanto fica o frete?", resposta: "Oii, tudo bem? O frete é calculado automaticamente no próprio anúncio, de acordo com seu CEP." }
+      ],
+      "CANCELADOS": [
+        { pergunta: "CANCELADO POR FALTA DE ENVIO", resposta: "Oi, tudo bem? Peço sinceras desculpas pelo transtorno com o encerramento do seu pedido. Entendo o impacto dessa situação e lamento que tenha passado por isso. A Shopee está enfrentando problemas na coleta, por conta da grande demanda da época, afetando a todos nós, especialmente você. Os reembolsos levam em média 48 horas, mas se demorar, sugiro contatar o suporte da Shopee. Como forma de compensação, ofereço um cupom de desconto, caso ainda tenha interesse na peça." },
+        { pergunta: "CANCELADO POR FALTA DE ENVIO mas já recomprou", resposta: "Oii, tudo bem? Peço desculpas. A Shopee teve alguns problemas por conta do grande volume, o que gerou alguns encerramentos de pedidos. Eu vi que já realizou outra compra, vou dar preferência pra ela. Os reembolsos levam em média 48 horas, mas se demorar, sugiro contatar o suporte da Shopee." },
+        { pergunta: "FALHA NA ENTREGA", resposta: "Olá! Sinto muito pelo problema na entrega, sei como isso pode ser frustrante. A Shopee Express é responsável por todo o processo, e infelizmente não temos controle sobre o ocorrido. Mas não se preocupe! Você pode entrar em contato com o suporte da Shopee pelo app, na seção 'Ajuda'. Enquanto isso, posso te oferecer um cupom de desconto caso ainda tenha interesse na peça." }
+      ],
+      "PAGAMENTOS": [
+        { pergunta: "REEMBOLSO PARCIAL", resposta: "Peço só que abra o pedido de reembolso, dentro do próprio pedido, e eu já libero para você. Qualquer dúvida, estou à disposição!" },
+        { pergunta: "Reembolso direto", resposta: "Oii tudo bem? Já liberei seu reembolso dentro do pedido, e só entrar lá. Não precisa devolver." },
+        { pergunta: "PIX alternativo", resposta: "Oii tudo bem? Assim que o time da Shopee liberar o reembolso, eu já autorizo aqui. Não precisa devolver nada. Se não liberarem hoje, posso fazer por pix para você." },
+        { pergunta: "Shopee atrasando reembolso", resposta: "Bom dia, como a Shopee está demorando para liberar, peço que me passe uma chave pix, que minha equipe já faz pra você." },
+        { pergunta: "Confirmação pix feito", resposta: "Oii tudo bem? Acabo de fazer seu pix. Você pode usar ele para fazer a compra desse anúncio de 2,00 reais que eu te mando as peças novas." }
+      ],
+      "DEVOLUÇÃO_E_REEMBOLSO": [
+        { pergunta: "COMO SOLICITAR DEVOLUÇÃO", resposta: "Vá até 'A caminho' em 'Minhas compras' > selecione o pedido > clique em 'Pedido de Reembolso' > selecione o motivo > forneça evidências se aplicável > clique em 'Enviar'." },
+        { pergunta: "trocas", resposta: "As trocas são feitas pela Shopee. É necessário abrir o pedido de devolução e reembolso para liberar a devolução e o dinheiro. Assim, você consegue comprar um novo kit." }
+      ],
+      "PIX_E_KANGU": [
+        { pergunta: "PIX", resposta: "Peço que me passe uma chave pix que eu já passo para minha equipe fazer. Para isso, coloque vírgulas ou pontos entre os números, para a Shopee não bloquear a mensagem." },
+        { pergunta: "Contato para envio", resposta: "Peço só que me passe um número de contato para que eu passe a transportadora. Para isso, use vírgulas ou pontos nos números para evitar bloqueio." },
+        { pergunta: "Confirmação envio", resposta: "Agradeço, já estou passando para minha equipe de envios. Assim que for despachado, eu te envio o rastreio." },
+        { pergunta: "PIX feito e rastreio", resposta: "Olá, já está sendo enviado. Vou deixar o rastreio aqui, mas pode levar até o final do dia para atualizar." },
+        { pergunta: "Atraso por saúde", resposta: "Oii tudo bem? Peço desculpas pela demora. A gestora da página teve que se afastar por saúde e eu estou assumindo. Acabei de fazer seu reembolso de 30%." }
+      ],
+      "FALTANDO": [
+        { pergunta: "FALTANDO PARAFUSO", resposta: "Olá, tudo bem? Peço desculpas pelo nosso erro. Posso fazer um pix com o valor dos parafusos para você comprar na sua cidade ou te enviar as peças, como preferir." },
+        { pergunta: "Outras peças faltando", resposta: "Olá, tudo bem? Peço desculpas. Posso te enviar as peças que faltaram, pode ser? Só me diga certinho quais foram." }
+      ],
+    "ERRADO": [
+        { pergunta: "ME ENVIARAM O MODELO ERRADO", resposta: "Oii, tudo bem? Peço desculpas por isso. Tivemos um problema com nosso fornecedor. Posso fazer a devolução e reembolso, ou se preferir ficar com ela posso te dar 15% de desconto. O que você prefere?" }
+      ],
+      "QUEBRAS": [
+        { pergunta: "PEÇA QUEBRADA, SEM FOTO", resposta: "Oii, espero que esteja bem. Sinto muito por isso! Para que eu possa te ajudar da melhor forma, você poderia me enviar uma foto do item? Assim consigo entender melhor o que aconteceu e buscar a melhor solução para você." },
+        { pergunta: "CILINDRO POUCO QUEBRADO", resposta: "Olá, tudo bem? Em nome da Casa Rosa, peço sinceras desculpas pelo ocorrido. Podemos fazer a troca ou, se preferir, você pode ficar com ele e fazer os reparos (por exemplo, usando cola branca). Nesse caso, ofereço um reembolso de 15%. Qual opção prefere?" },
+        { pergunta: "CILINDRO MUITO QUEBRADO", resposta: "Oi! Sinto muito mesmo pelo que aconteceu. Podemos fazer a devolução com reembolso ou troca pela Shopee. Ou posso te enviar outro trio ou peça do nosso catálogo, sem custo das peças, pagando só o frete. Assim você não precisa se incomodar com a devolução." },
+        { pergunta: "ARCOS E PAINEIS QUEBRADOS", resposta: "Oi! Sinto muito mesmo pelo que aconteceu. Podemos fazer a devolução com reembolso ou troca pela Shopee. Ou posso te enviar outra peça igual ou equivalente do nosso catálogo, pagando apenas o frete." },
+        { pergunta: "ARCOS QUEBRADOS", resposta: "Oii, tudo bem? Peço mil desculpas. Posso te enviar peças novas para repor as quebradas. Pode ser?" },
+        { pergunta: "TRAVAS DOS ARCOS QUEBRADAS, PRECISA CONFIRMAR", resposta: "Boa tarde, peço desculpas. O problema pode estar nas travas de união. Pode me enviar uma foto delas?" },
+        { pergunta: "TRAVAS DOS ARCOS QUEBRADAS, JÁ CONFIRMADO", resposta: "Oii, tudo bem? Posso te enviar peças novas para repor essas, ou fazer seu reembolso. O que é melhor para você?" }
+      ],
+      "MEDIDAS": [
+        { pergunta: "P4", resposta: "O arco redondo G tem 1.50m x 1.50m no arco e com o suporte ele fica com 2.00m de altura" },
+        { pergunta: "A11", resposta: "O arco romano tem 1.75m x 91cm, e também pode ser montado com 1,10m x 91cm" },
+        { pergunta: "T6", resposta: "Trio de Cilindros: G 80cm x 50cm / M 58cm x 43cm / P 45cm x 36cm" },
+        { pergunta: "P3", resposta: "Painel que pode ser montado em 3 medidas: 2,20m x 91cm, 1,68m x 91cm, ou 1,10m x 91cm" },
+        { pergunta: "P5", resposta: "Arco redondo P com 80cm x 80cm no arco e com suporte fica com 1.50m de altura" },
+        { pergunta: "MINI", resposta: "Nosso painel mini de mesa tem 28cm x 28cm" }
+      ],
+      "EXPLICAÇÃO": [
+        { pergunta: "KIT (A11+P4)", resposta: "Arco redondo 1.50x1.50 e arco romano 1.80m x 90cm. Sem cilindros." },
+        { pergunta: "KIT (T6+A11+P4)", resposta: "Trio de cilindros + painel redondo 1.50x1.50 + painel romano 1.80x91 + painel mini 28x28" },
+        { pergunta: "KIT (T6+P4)", resposta: "Trio de cilindros + painel redondo 1.50x1.50 + painel mini 28x28" },
+        { pergunta: "O QUE VEM NESSE ANUNCIO?", resposta: "Este anúncio permite escolher kits com diferentes peças, cada um com valor diferente. Ex: 69,90 arco redondo, 99 trio sem arco, até 209,00 com trio + 2 arcos." },
+        { pergunta: "KIT (T6+A11+P4+KIT.MESA)", resposta: "Trio de cilindros + painel redondo 1.50 + painel romano 1.80x91 + KIT porta docinho" },
+        { pergunta: "KIT (T6+P4+KIT.MESA)", resposta: "Trio de cilindros + painel redondo 1.50 + KIT porta docinho + painel de mesa 28x28" },
+        { pergunta: "KIT (T6)", resposta: "Trio de cilindros + painel de mesa 28x28" },
+        { pergunta: "MEDIDA DO A11", resposta: "Arco romano que pode ser montado com 1,80m ou com 1,10m" },
+        { pergunta: "PAINEL BRINDE", resposta: "Painel de mesa enviado como brinde. Usado para personagens, decorações, nomes e escritas." }
+      ],
+      "VIDEOS": [
+        { pergunta: "P4", resposta: "Montagem com 6 partes curvadas, 4 travas, 2 pés, 12 parafusos. Manual: https://youtu.be/BHirxN8hsL4" },
+        { pergunta: "A4", resposta: "Montagem: 4 partes retas (2 com rasgo), 2 curvadas, 2 pés. 5 travas, 10 parafusos. Manual: https://www.youtube.com/watch?v=D-lNjLbDEmg" },
+        { pergunta: "LOJA", resposta: "https://www.youtube.com/channel/UCJewp3SmIXfSR_5XjwWlD9A" },
+        { pergunta: "p7", resposta: "https://www.youtube.com/watch?v=AZ4iCtpEhc0&t=33s" },
+        { pergunta: "CASA DE GATO", resposta: "Usar cola branca ou super cola. Video: https://www.youtube.com/watch?v=me_t_Tap0JA" },
+        { pergunta: "CASA DE GATO COMPLETO", resposta: "Montagem P4: https://youtu.be/BHirxN8hsL4 — A4: https://www.youtube.com/watch?v=D-lNjLbDEmg" },
+        { pergunta: "P5", resposta: "Montagem com 5 partes curvadas, 3 travas, 2 pés, 10 parafusos. Manual: https://youtu.be/BHirxN8hsL4" }
+      ]
+    };
+
+    function criarSistema() {
+  const tabs = document.getElementById("tabs");
+  const conteudos = document.getElementById("conteudos");
+  tabs.innerHTML = conteudos.innerHTML = "";
+
+  const icones = {
+    "INF ENVIOS": "🚚", "NOVO PEDIDO": "🛒", "ATRASADO": "⏰", "ENVIADO": "📦",
+    "INFO ENTREGAS": "📬", "CANCELADOS": "❌", "PAGAMENTOS": "💰", "DEVOLUÇÃO_E_REEMBOLSO": "↩️",
+    "PIX_E_KANGU": "🏦", "FALTANDO": "📉", "ERRADO": "🚫", "QUEBRAS": "🧱",
+    "MEDIDAS": "📏", "EXPLICAÇÃO": "❓", "VIDEOS": "🎥"
+  };
+
+  const favoritos = JSON.parse(localStorage.getItem("favoritos") || "[]");
+
+  Object.keys(dados).forEach((categoria, idx) => {
+    const btn = document.createElement("button");
+    btn.className = "tab-button";
+    btn.innerText = `${icones[categoria] || "📁"} ${categoria}`;
+    btn.onclick = () => mostrarAba(categoria);
+    if (idx === 0) btn.classList.add("active");
+    btn.id = `btn-${categoria}`;
+    tabs.appendChild(btn);
+
+    const div = document.createElement("div");
+    div.className = "tab-content";
+    if (idx === 0) div.classList.add("active");
+    div.id = `tab-${categoria}`;
+
+    dados[categoria].forEach(item => {
+      const qna = document.createElement("div");
+      qna.className = "qna-item";
+
+      const isFavorito = favoritos.includes(item.pergunta);
+      const estrela = `<span class='estrela ${isFavorito ? "favorito" : ""}' onclick='favoritar(this, ${JSON.stringify(item.pergunta)})'>⭐</span>`;
+
+      qna.innerHTML = `
+  ${estrela}
+  <strong contenteditable="true" oninput="editarPergunta(this, ${JSON.stringify(categoria)}, ${JSON.stringify(item.pergunta)})">${item.pergunta}</strong>
+  <div class='resposta' contenteditable="true" oninput="editarResposta(this, ${JSON.stringify(categoria)}, ${JSON.stringify(item.pergunta)})">${item.resposta}</div>
+  <button onclick="copiarResposta(this)">Copiar resposta</button>
+  <div class='feedback'>
+    Essa resposta foi útil?
+    <button onclick='registrarFeedback("👍", ${JSON.stringify(item.pergunta)})'>👍</button>
+    <button onclick='registrarFeedback("👎", ${JSON.stringify(item.pergunta)})'>👎</button>
+  </div>
+`;
+
+      div.appendChild(qna);
+    });
+
+    conteudos.appendChild(div);
+  });
+}
+
+    function mostrarAba(categoria) {
+      document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(div => div.classList.remove('active'));
+      document.getElementById(`btn-${categoria}`).classList.add('active');
+      document.getElementById(`tab-${categoria}`).classList.add('active');
+    }
+
+   function copiarResposta(botao) {
+  const texto = botao.parentElement.querySelector('.resposta').innerText;
+  navigator.clipboard.writeText(texto);
+  botao.innerText = "Copiado!";
+  setTimeout(() => botao.innerText = "Copiar resposta", 1500);
+}
+
+
+    function filtrarPerguntas() {
+      const filtro = document.getElementById("busca").value.toLowerCase();
+      document.querySelectorAll(".qna-item").forEach(item => {
+        const texto = item.innerText.toLowerCase();
+        item.style.display = texto.includes(filtro) ? "block" : "none";
+      });
+    }
+
+    function alternarTema() {
+      const atual = document.documentElement.getAttribute("data-theme") || "light";
+      const novo = atual === "light" ? "dark" : "light";
+      document.documentElement.setAttribute("data-theme", novo);
+      localStorage.setItem("tema", novo);
+    }
+function registrarFeedback(tipo, pergunta) {
+  console.log(`Feedback ${tipo} para: ${pergunta}`);
+  // Futuro: pode salvar em banco de dados ou analytics
+}
+function editarPergunta(el, categoria, perguntaOriginal) {
+  const novaPergunta = el.innerText.trim();
+  const lista = dados[categoria];
+  const item = lista.find(i => i.pergunta === perguntaOriginal);
+  if (item) {
+    item.pergunta = novaPergunta;
+    salvarEdicoes();
+  }
+}
+
+function editarResposta(el, categoria, perguntaOriginal) {
+  const novaResposta = el.innerText.trim();
+  const lista = dados[categoria];
+  const item = lista.find(i => i.pergunta === perguntaOriginal);
+  if (item) {
+    item.resposta = novaResposta;
+    salvarEdicoes();
+  }
+}
+
+function salvarEdicoes() {
+  localStorage.setItem("faq_editado", JSON.stringify(dados));
+}
+
+
+    document.documentElement.setAttribute("data-theme", localStorage.getItem("tema") || "light");
+const salvos = localStorage.getItem("faq_editado");
+if (salvos) {
+  Object.assign(dados, JSON.parse(salvos));
+}
+
+    criarSistema();
+// Função global para favoritar perguntas
+window.favoritar = function(elem, pergunta) {
+  let favoritos = JSON.parse(localStorage.getItem("favoritos") || "[]");
+
+  if (favoritos.includes(pergunta)) {
+    favoritos = favoritos.filter(p => p !== pergunta);
+    elem.classList.remove("favorito");
+  } else {
+    favoritos.push(pergunta);
+    elem.classList.add("favorito");
+  }
+
+  localStorage.setItem("favoritos", JSON.stringify(favoritos));
+};
+document.getElementById("exportarPDF").addEventListener("click", () => {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+  const abaAtiva = document.querySelector(".tab-button.active");
+  if (!abaAtiva) return;
+
+  const categoria = abaAtiva.innerText.replace(/^[^\s]+ /, ""); // remove ícone
+  const lista = dados[categoria] || [];
+  let y = 10;
+
+  lista.forEach((item, i) => {
+    doc.text(`${i + 1}. ${item.pergunta}`, 10, y);
+    y += 7;
+    const linhasResposta = doc.splitTextToSize(`→ ${item.resposta}`, 180);
+    doc.text(linhasResposta, 10, y);
+    y += linhasResposta.length * 7;
+    if (y > 270) {
+      doc.addPage();
+      y = 10;
+    }
+  });
+
+  doc.save(`${categoria}.pdf`);
+});
+document.getElementById("restaurarDados").addEventListener("click", () => {
+  if (confirm("Tem certeza que deseja restaurar todas as perguntas e respostas para o estado original? Todas as edições serão perdidas.")) {
+    localStorage.removeItem("faq_editado");
+    localStorage.removeItem("favoritos");
+    location.reload();
+  }
+});
+
+  </script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script>
+  if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("service-worker.js")
+      .then(() => console.log("✅ Service Worker registrado com sucesso."))
+      .catch(err => console.error("❌ Erro ao registrar Service Worker:", err));
+  }
+</script>
+
+</body>
+</html>
+
